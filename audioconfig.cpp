@@ -117,8 +117,9 @@ void AudioConfig::setListEndianz(const QList<QAudioFormat::Endian> &newListEndia
     emit listEndianzChanged();
 }
 
-void AudioConfig::saveConfig(int codec, int sampleRate, int channel, int endian)
+void AudioConfig::saveConfig(int device, int codec, int sampleRate, int channel, int endian)
 {
+    m_deviceInfo = cpplistDevices[device];
     m_settings.setSampleRate(listSampleRate().at(sampleRate));
     m_settings.setChannelCount(listChannel().at(channel));
     m_settings.setByteOrder(listEndianz().at(endian));
@@ -127,7 +128,15 @@ void AudioConfig::saveConfig(int codec, int sampleRate, int channel, int endian)
     m_settings.setSampleSize(16);
     m_settings.setSampleType(QAudioFormat::SignedInt);
 
-    qInfo()<< "save params: " << codec <<sampleRate << channel << endian;
+    m_nearistParams.clear();
+
+    m_nearistParams.append(device);
+    m_nearistParams.append(codec);
+    m_nearistParams.append(sampleRate);
+    m_nearistParams.append(channel);
+    m_nearistParams.append(endian);
+
+    qInfo()<< "save params: " << m_nearistParams;
 }
 
 QAudioDeviceInfo AudioConfig::deviceInfo() const
@@ -140,4 +149,8 @@ QAudioFormat AudioConfig::settings() const
     return m_settings;
 }
 
+QList<int> AudioConfig::nearistParams() const
+{
+    return m_nearistParams;
+}
 

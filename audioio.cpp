@@ -29,7 +29,7 @@ void AudioIO::start(const QAudioFormat& format, const QAudioDeviceInfo& deviceIn
 }
 
 void AudioIO::stop() {
-    stop();
+    disconnect(m_audioIODevice2, &QIODevice::readyRead, this, &AudioIO::onReadyRead);
     delete m_audioInput;
     m_audioInput = nullptr;
 }
@@ -37,10 +37,9 @@ void AudioIO::stop() {
 void AudioIO::onReadyRead()
 {
     if (m_audioInput && m_audioIODevice) {
-        qDebug()<< "here is handleDatainput";
         QByteArray data = m_audioIODevice2->readAll();
         emit sendData(data);
-        // qInfo()<<"dataNE"<<data;
+        qInfo()<<"dataNE"<<data;
     }
 }
 

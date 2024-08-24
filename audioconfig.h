@@ -17,6 +17,8 @@ class AudioConfig : public QObject
     Q_PROPERTY(QStringList listCodecs READ listCodecs WRITE setListCodecs NOTIFY listCodecsChanged FINAL)
     Q_PROPERTY(QList<QAudioFormat::Endian> listEndianz READ listEndianz WRITE setListEndianz NOTIFY listEndianzChanged FINAL)
 
+    Q_PROPERTY(QList<int> nearistParams READ nearistParams NOTIFY nearistParamsChanged FINAL)
+
 public:
     explicit AudioConfig(QObject *parent = nullptr);
 
@@ -37,11 +39,13 @@ public:
 
     Q_INVOKABLE void changeDevice(int idx);
 
-    Q_INVOKABLE void saveConfig(int codec, int sampleRate, int channel, int endian);
+    Q_INVOKABLE void saveConfig(int device, int codec, int sampleRate, int channel, int endian);
 
     QAudioDeviceInfo deviceInfo() const;
 
     QAudioFormat settings() const;
+
+    QList<int> nearistParams() const;
 
 signals:
     void listCodecsChanged();
@@ -49,6 +53,8 @@ signals:
     void listChannelChanged();
     void listEndianzChanged();
     void listDevicesChanged();
+
+    void nearistParamsChanged();
 
 private:
     QAudioDeviceInfo m_deviceInfo;
@@ -62,6 +68,7 @@ private:
     QStringList m_listCodecs;
     QList<QAudioFormat::Endian> m_listEndianz;
 
+    QList<int> m_nearistParams = {0,0,0,0,0};
 };
 
 #endif // AUDIOCONFIG_H

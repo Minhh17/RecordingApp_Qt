@@ -26,7 +26,7 @@ Rectangle {
         height: 40
         font.pointSize: 18
         font.family: "Oxanium"
-        // currentIndex: 0
+        currentIndex: audioConfig.nearistParams[0]
         enabled: !audioController.recStatus
 
         model: audioConfig.listDevices
@@ -34,7 +34,6 @@ Rectangle {
         onCurrentIndexChanged: {
             console.log("Selected choose_device Item:", deviceCb.currentText)
             audioConfig.changeDevice(deviceCb.currentIndex)
-            audioConfig.selectedParams.device = currentText
             console.log("Selected choose_device Item:", audioConfig.selectedParams);
             // Add logic here
         }
@@ -56,7 +55,7 @@ Rectangle {
         y: 124
         width: 157
         height: 40
-        currentIndex: 0
+        currentIndex: audioConfig.nearistParams[1]
         model: audioConfig.listCodecs
         font.pointSize: 18
         font.family: "Oxanium"
@@ -93,7 +92,7 @@ Rectangle {
         y: 124
         width: 178
         height: 40
-        currentIndex: 0
+        currentIndex: audioConfig.nearistParams[2]
         enabled: !audioController.recStatus
 
         model: ListModel {
@@ -104,27 +103,12 @@ Rectangle {
         font.family: "Oxanium"
     }
 
-    Button {
-        id: button
-        x: 343
-        y: 363
-        text: qsTr("Save")
-        enabled: !audioController.recStatus
-
-        onClicked: {
-            //Load to Record Device
-            audioConfig.saveConfig(codecCb.currentIndex, sampleRateCb.currentIndex, channelsCb.currentIndex, endianzCb.currentIndex)
-            console.log("from qml: " + audioConfig.listDevices[0])
-            // console.log("click: " +devicename)
-        }
-    }
-
     ComboBox {
         id: channelsCb
         x: 590
         y: 124
         font.family: "Oxanium"
-        currentIndex: 0
+        currentIndex: audioConfig.nearistParams[3]
         font.pointSize: 18
         enabled: !audioController.recStatus
 
@@ -150,7 +134,7 @@ Rectangle {
         width: 157
         height: 40
         font.pointSize: 18
-        currentIndex: 0
+        currentIndex: audioConfig.nearistParams[4]
         font.family: "Oxanium"
         enabled: !audioController.recStatus
 
@@ -167,5 +151,20 @@ Rectangle {
         height: 26
         text: qsTr("endianz")
         font.pixelSize: 12
+    }
+
+    Button {
+        id: button
+        x: 343
+        y: 363
+        text: qsTr("Save")
+        enabled: !audioController.recStatus
+
+        onClicked: {
+            //Load to Record Device
+            audioConfig.saveConfig(deviceCb.currentIndex, codecCb.currentIndex, sampleRateCb.currentIndex, channelsCb.currentIndex, endianzCb.currentIndex)
+            console.log("from qml: " + audioConfig.listDevices[0])
+            // console.log("click: " +devicename)
+        }
     }
 }

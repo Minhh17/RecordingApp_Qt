@@ -34,6 +34,7 @@ void AudioController::pauseRecord()
 
 void AudioController::stopRecord()
 {
+    m_audioIO->stop();
     qDebug()<< "stop rec";
     setRecStatus(false);
 }
