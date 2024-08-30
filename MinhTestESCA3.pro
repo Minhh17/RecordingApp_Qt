@@ -1,4 +1,4 @@
-QT += quick virtualkeyboard multimedia qml core
+QT += quick virtualkeyboard multimedia qml core gui
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -6,9 +6,11 @@ QT += quick virtualkeyboard multimedia qml core
 
 SOURCES += \
         audiochart.cpp \
+        audiochart2.cpp \
         audioconfig.cpp \
         audiocontroller.cpp \
         audiodevice.cpp \
+        audiofile.cpp \
         audioio.cpp \
         audioprocessing.cpp \
         main.cpp
@@ -28,6 +30,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 DISTFILES += \
+    qml/content/AudioChart.qml \
     qml/content/ConfigAudio.qml \
     qml/content/Processing.qml \
     qml/content/component/BottomMenu.qml \
@@ -44,9 +47,11 @@ DISTFILES += \
 HEADERS += \
     IAudioRecorder.h \
     audiochart.h \
+    audiochart2.h \
     audioconfig.h \
     audiocontroller.h \
     audiodevice.h \
+    audiofile.h \
     audioio.h \
     audioprocessing.h \
     interfaces/IAudioRecorder.h

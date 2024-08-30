@@ -1,15 +1,27 @@
-    #include "audiocontroller.h"
+#include "audiocontroller.h"
 #include <QDebug>
 
 AudioController::AudioController(AudioConfig *config, QObject *parent)
-    : QObject{parent}, m_audioIO(new AudioIO(this)), m_outputFile(new QFile()), m_audioConfig(config)
+    : QObject{parent},
+    m_audioIO(new AudioIO(this)),
+    m_audioConfig(config),
+    m_audioFile("/home/haiminh/Desktop/MinhTestESCA3/dataNe/minh.wav"),
+    // m_audioChart(new AudioChart()),
+    m_audioChart2(new AudioChart2())
 {
+    qmlRegisterSingletonInstance("AudioChartImport2", 1, 0, "AudioChart2", m_audioChart2);
+
     connect(m_audioIO, &AudioIO::sendData, this, &AudioController::handleDataReady);
+    connect(this, &AudioController::sendDataChart, m_audioChart2, &AudioChart2::onSendChartData);
     qDebug() << "Address of m_audioConfig in AudioController:" << m_audioConfig;
 
-    m_outputFile.setFileName("/home/haiminh/Desktop/MinhTestESCA3/dataNe/minh.wav");
+    // m_outputFile.setFileName("/home/haiminh/Desktop/Minh TestESCA3/dataNe/minh.wav");
     setRecStatus(false);
+}
 
+AudioController::~AudioController()
+{
+    delete m_audioChart;
 }
 
 void AudioController::startRecord()
@@ -19,11 +31,9 @@ void AudioController::startRecord()
 
     QAudioFormat format = m_audioConfig->settings();
     QAudioDeviceInfo deviceInfo = m_audioConfig->deviceInfo();
+    m_audioIO->start(format, deviceInfo);
 
     qInfo()<<"start controller";
-
-    // m_audioDevice->start();
-    m_audioIO->start(format, deviceInfo);
     setRecStatus(true);
 }
 
@@ -41,11 +51,15 @@ void AudioController::stopRecord()
 
 void AudioController::handleDataReady(const QByteArray &data)
 {
-    if (m_outputFile.isOpen()) {
-        m_outputFile.write(data);
-    }
-    // qInfo() << "Data Controller: " << data;
+    qDebug() <<"handleDataReady-audioController"<<data.at(0);
+    emit sendDataChart(data);
+
+    // if (m_audioChart) {
+    //     m_audioChart->onUpdateChart(data);
+    // }
+
 }
+
 
 bool AudioController::recStatus() const
 {
@@ -59,3 +73,6 @@ void AudioController::setRecStatus(bool newRecStatus)
     m_recStatus = newRecStatus;
     emit recStatusChanged();
 }
+
+
+

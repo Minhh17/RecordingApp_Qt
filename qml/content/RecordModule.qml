@@ -101,7 +101,7 @@ Rectangle {
                     anchors.fill: parent
                     onClicked: {
                         selectedBtn = "timer"
-                        contentLoader.setSource("ConfigAudio.qml");
+                        contentLoader.setSource("AudioChart.qml");
                     }
                 }
             }

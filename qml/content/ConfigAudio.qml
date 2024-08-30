@@ -34,7 +34,7 @@ Rectangle {
         onCurrentIndexChanged: {
             console.log("Selected choose_device Item:", deviceCb.currentText)
             audioConfig.changeDevice(deviceCb.currentIndex)
-            console.log("Selected choose_device Item:", audioConfig.selectedParams);
+            // console.log("Selected choose_device Item:", audioConfig.selectedParams);
             // Add logic here
         }
     }
@@ -55,11 +55,13 @@ Rectangle {
         y: 124
         width: 157
         height: 40
-        currentIndex: audioConfig.nearistParams[1]
-        model: audioConfig.listCodecs
+        currentIndex: audioConfig.nearistParams[1] >= 0 ? audioConfig.nearistParams[1] : -1
+        // currentIndex: -1
         font.pointSize: 18
         font.family: "Oxanium"
         enabled: !audioController.recStatus
+
+        model: audioConfig.listCodecs
 
         onCountChanged: {
 
@@ -153,6 +155,26 @@ Rectangle {
         font.pixelSize: 12
     }
 
+    // Dialog {
+    //     id: formatWarningDialog
+    //     title: "Format You Choose Not Supported"
+    //     visible: audioConfig.nearistParams[5] === 0
+    //     onVisibleChanged: {
+    //         if (!visible) saudioConfig.nearistParams[5] = 1;  // Reset visibility when dialog is closed
+    //     }
+    //     standardButtons: Dialog.Ok
+
+    //     Label {
+    //         text: "The selected format is not supported for recording."
+    //         wrapMode: Text.WordWrap
+    //         width: parent.width - 40
+    //     }
+
+    //     onAccepted: {
+    //         audioConfig.nearistParams[5] = 1;  // Hide the dialog when OK is pressed
+    //     }
+    // }
+
     Button {
         id: button
         x: 343
@@ -162,6 +184,7 @@ Rectangle {
 
         onClicked: {
             //Load to Record Device
+            console.log("from codec: " + codecCb.currentIndex)
             audioConfig.saveConfig(deviceCb.currentIndex, codecCb.currentIndex, sampleRateCb.currentIndex, channelsCb.currentIndex, endianzCb.currentIndex)
             console.log("from qml: " + audioConfig.listDevices[0])
             // console.log("click: " +devicename)

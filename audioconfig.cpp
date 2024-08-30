@@ -119,14 +119,27 @@ void AudioConfig::setListEndianz(const QList<QAudioFormat::Endian> &newListEndia
 
 void AudioConfig::saveConfig(int device, int codec, int sampleRate, int channel, int endian)
 {
+    if (codec == -1) {
+        qWarning() << "Codec index out of range, using default codec.";
+        // m_settings.setCodec("");
+    } else {
+        m_settings.setCodec(listCodecs().at(codec));
+    }
+
+    // int checkVar = 0;
     m_deviceInfo = cpplistDevices[device];
     m_settings.setSampleRate(listSampleRate().at(sampleRate));
     m_settings.setChannelCount(listChannel().at(channel));
     m_settings.setByteOrder(listEndianz().at(endian));
-    m_settings.setCodec(listCodecs().at(codec));
 
     m_settings.setSampleSize(16);
     m_settings.setSampleType(QAudioFormat::SignedInt);
+
+    if (!m_deviceInfo.isFormatSupported(m_settings)) {
+        qWarning() << "Default format not supported";
+        // m_settings = m_deviceInfo.nearestFormat(m_settings);
+        // checkVar = 1;
+    }
 
     m_nearistParams.clear();
 
@@ -135,6 +148,7 @@ void AudioConfig::saveConfig(int device, int codec, int sampleRate, int channel,
     m_nearistParams.append(sampleRate);
     m_nearistParams.append(channel);
     m_nearistParams.append(endian);
+    // m_nearistParams.append(checkVar);
 
     qInfo()<< "save params: " << m_nearistParams;
 }
