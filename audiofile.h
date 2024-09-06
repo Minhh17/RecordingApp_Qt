@@ -1,24 +1,27 @@
-#ifndef AUDIOFILE_H
-#define AUDIOFILE_H
-
 #include <QFile>
+#include <QDataStream>
+#include <QAudioFormat>
 #include <QByteArray>
+#include <QDir>
 
-class AudioFile : public QObject
-{
-    Q_OBJECT
-
+class AudioFile {
 public:
-    explicit AudioFile(const QString &filePath);
+    AudioFile();
     ~AudioFile();
 
-    void writeData(const QByteArray &data);
-    void closeFile();
+    bool startRecording(const QString &fileName, const QAudioFormat &format);
+    void writeAudioData(const QByteArray &data);
+    void stopRecording();
+
+    // For playback
+    bool openForPlayback(const QString &fileName);
+    QByteArray readAudioData();
 
 private:
-    QFile outputFile;
-    void writeWavHeader();
-    void updateWavHeader();
-};
+    QFile wavFile;
+    QAudioFormat audioFormat;
+    qint64 dataSize;
 
-#endif // AUDIOFILE_H
+    void writeWavHeader();
+    void finalizeWavHeader();
+};

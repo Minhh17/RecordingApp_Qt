@@ -30,7 +30,6 @@ class AudioChart2 : public QObject
 public:
     Q_PROPERTY(QVariant displayData READ displayData WRITE setDisplayData NOTIFY displayDataChanged FINAL)
     explicit AudioChart2(QObject *parent = nullptr);
-    CircuitBuffer buffer;
 
     QVariant displayData() const;
     void setDisplayData(const QVariant &newDisplayData);
@@ -40,10 +39,10 @@ public slots:
 
 signals:
     void updateChart(QVariant displayData);
-
     void displayDataChanged();
 
 private:
+    CircuitBuffer buffer;
     int displayDataCount = 500;
     QVariant m_displayData = {};
 };

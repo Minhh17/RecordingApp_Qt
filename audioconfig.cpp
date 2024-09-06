@@ -3,32 +3,39 @@
 AudioConfig::AudioConfig(QObject *parent)
     : QObject{parent}
 {
+    m_nearistParams[0] = m_settings.value("audio/device", 0).toInt();
+    m_nearistParams[1] = m_settings.value("audio/codec", 0).toInt();
+    m_nearistParams[2] = m_settings.value("audio/sampleRate", 0).toInt();
+    m_nearistParams[3] = m_settings.value("audio/channel", 0).toInt();
+    m_nearistParams[4] = m_settings.value("audio/endian", 0).toInt();
+    qInfo() << "m_nearistParams: "<<m_nearistParams;
+
     for (auto &deviceInfo : QAudioDeviceInfo::availableDevices(QAudio::AudioInput)) {
         cpplistDevices.append(deviceInfo);
         listDevicesName.append(deviceInfo.deviceName());
         // qDebug() << deviceInfo.deviceName();
     }
 
-    changeDevice(0);
-    m_deviceInfo = QAudioDeviceInfo::defaultInputDevice();
+    m_deviceInfo = cpplistDevices[m_nearistParams[0]];
+    m_format.setCodec(m_deviceInfo.supportedCodecs().at(m_nearistParams[1]));
+    m_format.setSampleRate(m_deviceInfo.supportedSampleRates().at(m_nearistParams[2]));
+    m_format.setChannelCount(m_deviceInfo.supportedChannelCounts().at(m_nearistParams[3]));
+    m_format.setByteOrder(m_deviceInfo.supportedByteOrders().at(m_nearistParams[4]));
+    m_format.setSampleSize(16);
+    m_format.setSampleType(QAudioFormat::SignedInt);
 
-    m_settings.setSampleRate(8000);
-    m_settings.setChannelCount(1);
-    m_settings.setSampleSize(16);
-    m_settings.setSampleType(QAudioFormat::SignedInt);
-    m_settings.setByteOrder(QAudioFormat::LittleEndian);
-    m_settings.setCodec("audio/pcm");
+    qInfo() << "m_format: "<<m_format;
+    qInfo() << "1: "<< m_format.sampleRate();
 
-    if (!m_deviceInfo.isFormatSupported(m_settings)) {
-        qWarning() << "Default format not supported - trying to use nearest";
-        m_settings = m_deviceInfo.nearestFormat(m_settings);
-    }
-    // m_settings.setSampleRate(m_deviceInfo.supportedSampleRates().at(0));
-    // m_settings.setChannelCount(m_deviceInfo.supportedChannelCounts().at(0));
-    // m_settings.setCodec(m_deviceInfo.supportedCodecs().at(0));
-    // m_settings.setByteOrder(m_deviceInfo.supportedByteOrders().at(0));
-    // m_settings.setSampleType(m_deviceInfo.supportedSampleTypes().at(0));
-    // m_settings.setSampleSize(m_deviceInfo.supportedSampleSizes().at(0));
+    setListSampleRate(m_deviceInfo.supportedSampleRates());
+    setListChannel(m_deviceInfo.supportedChannelCounts());
+    setListCodecs(m_deviceInfo.supportedCodecs());
+    setListEndianz(m_deviceInfo.supportedByteOrders());
+
+    // if (!m_deviceInfo.isFormatSupported(m_format)) {
+    //     qWarning() << "Default format not supported - trying to use nearest";
+    //     m_format = m_deviceInfo.nearestFormat(m_format);
+    // }
 }
 
 void AudioConfig::changeDevice(int idx)
@@ -37,22 +44,31 @@ void AudioConfig::changeDevice(int idx)
         qWarning() << "no device found";
 
     m_deviceInfo = cpplistDevices[idx];
+    m_nearistParams[0] = idx;  // Cập nhật index thiết bị
 
     setListSampleRate(m_deviceInfo.supportedSampleRates());
-    if (m_deviceInfo.supportedSampleRates().size())
-        m_settings.setSampleRate(m_deviceInfo.supportedSampleRates().at(0));
+    if (!m_deviceInfo.supportedSampleRates().empty()) {
+        m_format.setSampleRate(m_deviceInfo.supportedSampleRates().at(0));
+        m_nearistParams[2] = 0;  // Cập nhật index sample rate
+    }
 
     setListChannel(m_deviceInfo.supportedChannelCounts());
-    if (m_deviceInfo.supportedChannelCounts().size())
-        m_settings.setChannelCount(m_deviceInfo.supportedChannelCounts().at(0));
+    if (!m_deviceInfo.supportedChannelCounts().empty()) {
+        m_format.setChannelCount(m_deviceInfo.supportedChannelCounts().at(0));
+        m_nearistParams[3] = 0;  // Cập nhật index channel
+    }
 
     setListCodecs(m_deviceInfo.supportedCodecs());
-    if (m_deviceInfo.supportedCodecs().size())
-        m_settings.setCodec(m_deviceInfo.supportedCodecs().at(0));
+    if (!m_deviceInfo.supportedCodecs().empty()) {
+        m_format.setCodec(m_deviceInfo.supportedCodecs().at(0));
+        m_nearistParams[1] = 0;  // Cập nhật index codec
+    }
 
     setListEndianz(m_deviceInfo.supportedByteOrders());
-    if (m_deviceInfo.supportedByteOrders().size())
-        m_settings.setByteOrder(m_deviceInfo.supportedByteOrders().at(0));
+    if (!m_deviceInfo.supportedByteOrders().empty()) {
+        m_format.setByteOrder(m_deviceInfo.supportedByteOrders().at(0));
+        m_nearistParams[4] = 0;  // Cập nhật index endian
+    }
 }
 
 QStringList AudioConfig::listDevices() const
@@ -119,38 +135,41 @@ void AudioConfig::setListEndianz(const QList<QAudioFormat::Endian> &newListEndia
 
 void AudioConfig::saveConfig(int device, int codec, int sampleRate, int channel, int endian)
 {
-    if (codec == -1) {
-        qWarning() << "Codec index out of range, using default codec.";
-        // m_settings.setCodec("");
-    } else {
-        m_settings.setCodec(listCodecs().at(codec));
-    }
+    m_nearistParams = {device, codec, sampleRate, channel, endian};
+
+    qInfo()<< "save params qml: " << m_nearistParams << listChannel();
 
     // int checkVar = 0;
     m_deviceInfo = cpplistDevices[device];
-    m_settings.setSampleRate(listSampleRate().at(sampleRate));
-    m_settings.setChannelCount(listChannel().at(channel));
-    m_settings.setByteOrder(listEndianz().at(endian));
+    m_format.setSampleRate(listSampleRate().at(sampleRate));
+    m_format.setChannelCount(listChannel().at(channel));
+    m_format.setByteOrder(listEndianz().at(endian));
+    m_format.setSampleSize(16);
+    m_format.setSampleType(QAudioFormat::SignedInt);
 
-    m_settings.setSampleSize(16);
-    m_settings.setSampleType(QAudioFormat::SignedInt);
+    if (!m_deviceInfo.isFormatSupported(m_format)) {
 
-    if (!m_deviceInfo.isFormatSupported(m_settings)) {
-        qWarning() << "Default format not supported";
-        // m_settings = m_deviceInfo.nearestFormat(m_settings);
-        // checkVar = 1;
+        setSaveDone(false);
+
+        qWarning() << "Default format not supported -use nearist format";
+        m_format = m_deviceInfo.nearestFormat(m_format);
+
+        m_nearistParams[1] = m_deviceInfo.supportedCodecs().indexOf(m_format.codec());
+        m_nearistParams[2] = m_deviceInfo.supportedSampleRates().indexOf(m_format.sampleRate());
+        m_nearistParams[3] = m_deviceInfo.supportedChannelCounts().indexOf(m_format.channelCount());
+        m_nearistParams[4] = m_deviceInfo.supportedByteOrders().indexOf(m_format.byteOrder());
+
+        // Lưu các giá trị vào QSettings
+        m_settings.setValue("audio/device", m_nearistParams[0]);
+        m_settings.setValue("audio/codec", m_nearistParams[1]);
+        m_settings.setValue("audio/sampleRate", m_nearistParams[2]);
+        m_settings.setValue("audio/channel", m_nearistParams[3]);
+        m_settings.setValue("audio/endian", m_nearistParams[4]);
     }
 
-    m_nearistParams.clear();
-
-    m_nearistParams.append(device);
-    m_nearistParams.append(codec);
-    m_nearistParams.append(sampleRate);
-    m_nearistParams.append(channel);
-    m_nearistParams.append(endian);
-    // m_nearistParams.append(checkVar);
-
-    qInfo()<< "save params: " << m_nearistParams;
+    qInfo()<< "save params c++: " << m_nearistParams;
+    qInfo()<< "save params: " << m_deviceInfo.isFormatSupported(m_format);
+    qInfo()<< "channel params: " << m_deviceInfo.supportedChannelCounts().at(m_nearistParams[3]);
 }
 
 QAudioDeviceInfo AudioConfig::deviceInfo() const
@@ -158,9 +177,9 @@ QAudioDeviceInfo AudioConfig::deviceInfo() const
     return m_deviceInfo;
 }
 
-QAudioFormat AudioConfig::settings() const
+QAudioFormat AudioConfig::format() const
 {
-    return m_settings;
+    return m_format;
 }
 
 QList<int> AudioConfig::nearistParams() const
@@ -168,3 +187,15 @@ QList<int> AudioConfig::nearistParams() const
     return m_nearistParams;
 }
 
+bool AudioConfig::saveDone() const
+{
+    return m_saveDone;
+}
+
+void AudioConfig::setSaveDone(bool newSaveDone)
+{
+    if (m_saveDone == newSaveDone)
+        return;
+    m_saveDone = newSaveDone;
+    emit saveDoneChanged();
+}

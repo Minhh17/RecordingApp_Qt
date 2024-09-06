@@ -5,7 +5,7 @@ AudioController::AudioController(AudioConfig *config, QObject *parent)
     : QObject{parent},
     m_audioIO(new AudioIO(this)),
     m_audioConfig(config),
-    m_audioFile("/home/haiminh/Desktop/MinhTestESCA3/dataNe/minh.wav"),
+    m_audioFile(),
     // m_audioChart(new AudioChart()),
     m_audioChart2(new AudioChart2())
 {
@@ -26,11 +26,17 @@ AudioController::~AudioController()
 
 void AudioController::startRecord()
 {
-    qInfo()<<m_audioConfig->settings().channelCount();
+    qInfo()<<m_audioConfig->format().channelCount();
     qInfo()<<m_audioConfig->deviceInfo().deviceName();
 
-    QAudioFormat format = m_audioConfig->settings();
+    QAudioFormat format = m_audioConfig->format();
     QAudioDeviceInfo deviceInfo = m_audioConfig->deviceInfo();
+
+
+    if (!m_audioFile.startRecording("minhne.wav", format)) {
+        qDebug() << "Không thể bắt đầu ghi âm!";
+    }
+
     m_audioIO->start(format, deviceInfo);
 
     qInfo()<<"start controller";
@@ -44,7 +50,8 @@ void AudioController::pauseRecord()
 
 void AudioController::stopRecord()
 {
-    m_audioIO->stop();
+    m_audioFile.stopRecording();
+    m_audioIO->stop();    
     qDebug()<< "stop rec";
     setRecStatus(false);
 }
@@ -54,10 +61,11 @@ void AudioController::handleDataReady(const QByteArray &data)
     qDebug() <<"handleDataReady-audioController"<<data.at(0);
     emit sendDataChart(data);
 
+    m_audioFile.writeAudioData(data);
+
     // if (m_audioChart) {
     //     m_audioChart->onUpdateChart(data);
     // }
-
 }
 
 

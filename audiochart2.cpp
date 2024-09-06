@@ -1,7 +1,7 @@
 #include "audiochart2.h"
 #include <QDebug>
 
-CircuitBuffer::CircuitBuffer() : buffer(1000), head(0), tail(0), isFull(false) {}
+CircuitBuffer::CircuitBuffer() : buffer(5000), head(0), tail(0), isFull(false) {}
 
 void CircuitBuffer::add(float value)
 {
@@ -38,7 +38,7 @@ void AudioChart2::onSendChartData(const QByteArray &data)
     const int16_t *samples = reinterpret_cast<const int16_t*>(data.constData());
     int sampleCount = data.size() / sizeof(int16_t);
 
-    for (int i = 0; i < sampleCount; ++i) {
+    for (int i = 0; i < sampleCount-1; ++i) {
         buffer.add(samples[i]/* / 32767.0f*/); // Normalize to [-1, 1]
     }
 
@@ -53,7 +53,7 @@ void AudioChart2::onSendChartData(const QByteArray &data)
     }
 
     // Send displayData to UI
-    emit updateChart(QVariant::fromValue(displayData));
+    // emit updateChart(QVariant::fromValue(displayData));
     setDisplayData(QVariant::fromValue(displayData));
 
     // qInfo()<< "onSendChartData" << displayData.at(0);
