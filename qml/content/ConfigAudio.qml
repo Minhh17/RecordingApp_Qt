@@ -125,15 +125,6 @@ Rectangle {
         model: ListModel {
             id: channelMl
         }
-
-        Timer {
-            interval: 50;
-            running: true;
-            onTriggered: {
-                console.log("minh", channelsCb.currentIndex)
-            }
-        }
-
     }
 
     Text {
@@ -189,13 +180,16 @@ Rectangle {
             target: audioConfig
             function onSaveDoneChanged() {
                 formatWarningDialog.visible = !audioConfig.saveDone
-                console.log("qml data:", audioConfig.saveDone);
+                console.log("audioConfig.saveDone:", audioConfig.saveDone);
+                channelsCb.currentIndex = audioConfig.nearistParams[3]
+                codecCb.currentIndex = audioConfig.nearistParams[1]
+                sampleRateCb.currentIndex = audioConfig.nearistParams[2]
+                endianzCb.currentIndex = audioConfig.nearistParams[4]
             }
         }
 
         onAccepted: {
-            // audioConfig.saveDone = !audioConfig.saveDone
-
+            audioConfig.saveDone = !audioConfig.saveDone
             // audioConfig.saveDone = true;  // Hide the dialog when OK is pressed
             // codecCb.currentIndex = audioConfig.nearistParams[1]
             // sampleRateCb.currentIndex = audioConfig.nearistParams[2]
@@ -203,8 +197,6 @@ Rectangle {
             // endianzCb.currentIndex = audioConfig.nearistParams[4]
         }
     }
-
-
 
     Dialog {
         id: minhDialog
@@ -236,12 +228,12 @@ Rectangle {
             }
             else {
                 audioConfig.saveConfig(deviceCb.currentIndex, codecCb.currentIndex, sampleRateCb.currentIndex, channelsCb.currentIndex, endianzCb.currentIndex)
-                console.log("from qml: " + audioConfig.listChannel[0])
+                console.log("audioConfig.listChannel[0]: " + audioConfig.listChannel[0])
                 // console.log("click: " +devicename)
             }
 
             console.log("nearistParams[3]: ", audioConfig.nearistParams[3]);
-            console.log("hell0: ", audioConfig.nearistParams[3], channelsCb.currentIndex, audioConfig.saveDone);
+            // console.log("hell0: ", audioConfig.nearistParams[3], channelsCb.currentIndex, audioConfig.saveDone);
         }
     }
 }

@@ -8,6 +8,7 @@
 #include <QVariantMap>
 #include <QStringList>
 #include <QSettings>
+#include <QGuiApplication>
 
 class AudioConfig : public QObject
 {
@@ -24,6 +25,7 @@ class AudioConfig : public QObject
 
 public:
     explicit AudioConfig(QObject *parent = nullptr);
+    ~AudioConfig();
 
     QStringList listDevices() const;
     void setListDevices(const QStringList &newListDevices);
@@ -53,6 +55,8 @@ public:
     bool saveDone() const;
     void setSaveDone(bool newSaveDone);
 
+    void saveSettings();
+
 signals:
     void listCodecsChanged();
     void listSampleRateChanged();
@@ -77,7 +81,6 @@ private:
     QList<QAudioFormat::Endian> m_listEndianz;
 
     QList<int> m_nearistParams = {0,0,0,0,0};
-
     QSettings m_settings;
     bool m_saveDone = true;
 };
